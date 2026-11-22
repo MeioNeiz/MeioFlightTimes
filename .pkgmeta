@@ -1,0 +1,12 @@
+package-as: MeioFlightTimes
+
+move-folders:
+  MeioFlightTimes/addons/MeioFlightTimes: MeioFlightTimes
+
+ignore:
+  - docs
+  - README.md
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown

@@ -1,0 +1,26 @@
+{
+  "title": "Meio Flight Times",
+  "summary": "Flight times on the flight map and a timer while you fly, even for routes you haven't flown yet.",
+  "cfCategory": "Map & Minimap",
+  "cfExtra": [],
+  "wagoCategories": [
+    "Map & Minimap"
+  ],
+  "gallery": [
+    {
+      "file": "before-after.png",
+      "title": "Before and after",
+      "description": "The flight map in Stormwind: Darkshire's name and cost, then with its flight time under them"
+    },
+    {
+      "file": "estimate.png",
+      "title": "A route not flown yet",
+      "description": "Sentinel Hill, passed over on the way to Darkshire but never flown to: its time worked out from that leg"
+    },
+    {
+      "file": "flying.png",
+      "title": "While flying",
+      "description": "The timer bar counting down to landing in Darkshire"
+    }
+  ]
+}
