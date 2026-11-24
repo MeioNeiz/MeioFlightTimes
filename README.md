@@ -17,8 +17,8 @@ you haven't flown is still worked out from the legs you have.
 - Stays right when a newly learned flight point changes a route
 - With FlareUI's Flight Timer bar on, fills that bar instead
 
-No settings. `/meioflighttimes stats` shows what has been learned, `/meioflighttimes forget`
-starts over (`/flighttimes` works too).
+No settings. `/meioflighttimes stats` shows what has been learned,
+`/meioflighttimes forget confirm` starts over (`/flighttimes` works too).
 
 ## Install
 

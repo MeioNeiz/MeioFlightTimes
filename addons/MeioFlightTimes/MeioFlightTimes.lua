@@ -395,6 +395,10 @@ local function Learn(c, landAt)
     end
 end
 
+-- set at PLAYER_ENTERING_WORLD: whether it was a /reload (GetTime and the flight carry on
+-- unbroken) or a login (the time logged out is in GetTime but not in the flight)
+local enteredAt, enteredByReload = 0, false
+
 local ticker
 local function Check()
     local onTaxi = UnitOnTaxi("player")
@@ -418,17 +422,29 @@ local function Check()
         cur, db.now = nil, nil
         Learn(c, t)
     elseif cur then
+        cur.seen = t
         Track()
     elseif onTaxi and db.now then
-        -- after a /reload mid-air: GetTime carries on, a client restart doesn't
+        -- after a /reload mid-air: GetTime carries on, a client restart doesn't. After a relog
+        -- the time logged out is no flight time: only legs done before it are learned, and
+        -- the countdown picks up where it stopped.
         local r = db.now
         if r.start and r.start <= t and r.stamp and time() - r.stamp < RESUME then
             cur = r
+            if not enteredByReload then
+                local seen = r.seen or r.start
+                cur.keep, cur.cut = false, math.min(cur.cut or seen, seen)
+                if cur.est then cur.est = cur.est + t - seen end
+                cur.best = nil
+            end
+            cur.seen = t
             FeedFlare()
             RefreshFlare()
         else
             db.now = nil
         end
+    elseif db.now and not onTaxi and not pending and t - enteredAt > 10 then
+        db.now = nil -- landed while logged out (or a flight never seen to end)
     end
     ShowBar()
     local busy = pending or cur
@@ -535,7 +551,7 @@ end
 local f = CreateFrame("Frame")
 f:RegisterEvent("ADDON_LOADED")
 f:RegisterEvent("PLAYER_LOGIN")
-f:SetScript("OnEvent", function(self, event, name)
+f:SetScript("OnEvent", function(self, event, name, isReload)
     if event == "ADDON_LOADED" then
         if name ~= ADDON then return end
         MeioFlightTimesDB = MeioFlightTimesDB or {}
@@ -553,6 +569,10 @@ f:SetScript("OnEvent", function(self, event, name)
             "PLAYER_ENTERING_WORLD", "TAXIMAP_CLOSED" }) do
             pcall(self.RegisterEvent, self, e)
         end
+    end
+    if event == "PLAYER_ENTERING_WORLD" then
+        enteredAt, enteredByReload = GetTime(), isReload and true or false
+        C_Timer.After(10.5, Check)
     end
     C_Timer.After(0.2, Check)
 end)
