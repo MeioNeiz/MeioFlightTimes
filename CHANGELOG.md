@@ -1,5 +1,12 @@
 # Meio Flight Times
 
+## 1.3.0
+
+- The clock time you land at, on the flight map's tooltip and the timer bar ("lands
+  14:32", or 2:32 PM as your minimap clock shows it)
+- A chime 30 seconds before landing, with the taskbar flashing if the game is in the
+  background. `/meioflighttimes chime off`, `on`, or a number of seconds
+
 ## 1.2.0
 
 - The flight point a detouring route should learn is marked on the flight map while you

@@ -31,6 +31,9 @@ local ROLE_INDEX = { tl = 1, tp = 2, pl = 3, pp = 4 }
 -- learnable only by druids
 local DRUID_ONLY = { [62] = true, [63] = true }
 local MIN_SAVING = 60
+local CHIME_LEAD = 30
+-- TimeManager's alarm
+local CHIME_SOUND = SOUNDKIT and SOUNDKIT.ALARM_CLOCK_WARNING_3 or 12889
 
 local function Say(msg) DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg) end
 
@@ -39,6 +42,13 @@ local function Clock(s)
     return ("%d:%02d"):format(math.floor(s / 60), s % 60)
 end
 ns.Clock = Clock
+
+-- the wall clock time secs from now, in the minimap clock's 12 or 24 hour style
+local function LandsAt(secs)
+    local t = date("*t", time() + math.floor(secs + 0.5))
+    if GetCVarBool("timeMgrUseMilitaryTime") then return ("%02d:%02d"):format(t.hour, t.min) end
+    return ("%d:%02d %s"):format((t.hour - 1) % 12 + 1, t.min, t.hour < 12 and "AM" or "PM")
+end
 
 local function Round(s) return math.floor(s * 10 + 0.5) / 10 end
 local function EdgeKey(a, b) return a .. " > " .. b end
@@ -335,7 +345,7 @@ local function BarTick(self, elapsed)
     self.tick = 0
     local text = "|cffffd100" .. ShortName(c.path[#c.path]) .. "|r  "
     if known then
-        text = text .. Clock(c.est - flown)
+        text = text .. Clock(c.est - flown) .. "  |cff999999lands " .. LandsAt(c.est - flown) .. "|r"
     else
         text = text .. Clock(flown) .. " |cff999999(new route)|r"
     end
@@ -423,6 +433,22 @@ local function Track()
     end
 end
 
+local function ChimeLead()
+    if db.chime == false then return end
+    return tonumber(db.chime) or CHIME_LEAD
+end
+
+-- once per flight; a flight not much longer than the lead gets none
+local function Chime(c, t)
+    local lead = ChimeLead()
+    if c.chimed or not lead or not (c.est and c.est > lead + 10) then return end
+    local left = c.est - (t - c.start)
+    if left > lead or left <= 0 then return end
+    c.chimed = true
+    PlaySound(CHIME_SOUND, "Master")
+    if FlashClientIcon then FlashClientIcon() end
+end
+
 local function Learn(c, landAt)
     local k = #c.path - 1
     local times = { c.start }
@@ -482,6 +508,7 @@ local function Check()
     elseif cur then
         cur.seen = t
         Track()
+        Chime(cur, t)
     elseif onTaxi and db.now then
         -- after a /reload mid-air: GetTime carries on, a client restart doesn't. After a relog
         -- the time logged out is no flight time: only legs done before it are learned, and
@@ -713,6 +740,7 @@ local function AddTooltipLine(slot)
     local info = slot and db and Lookup(slot)
     if not (info and info.est) or GameTooltip:IsForbidden() then return end
     local text = "Flight time: " .. (info.how == "flown" and "" or "~") .. Clock(info.est)
+        .. ", lands " .. LandsAt(info.est)
     if info.how == "rough" then text = text .. " |cff999999(rough: route not flown)|r"
     elseif info.how ~= "flown" then text = text .. " |cff999999(estimate)|r" end
     GameTooltip_AddNormalLine(GameTooltip, text)
@@ -775,6 +803,8 @@ local function Help()
     Say("flight times learned per leg, so a route you haven't flown is still timed")
     for _, l in ipairs({
         Cmd("/meioflighttimes stats") .. " - what has been learned so far",
+        Cmd("/meioflighttimes chime off||on||<seconds>") .. " - the chime before landing"
+            .. " (now " .. (ChimeLead() and ChimeLead() .. "s" or "off") .. ")",
         Cmd("/meioflighttimes forget") .. " - forget every learned time",
     }) do
         DEFAULT_CHAT_FRAME:AddMessage("  " .. l)
@@ -798,6 +828,21 @@ SlashCmdList.MEIOFLIGHTTIMES = function(msg)
         Help()
     elseif cmd == "stats" then
         Stats()
+    elseif cmd == "chime" then
+        local n = tonumber(arg)
+        if arg == "off" then
+            db.chime = false
+        elseif arg == "on" then
+            db.chime = nil
+        elseif n and n >= 5 and n <= 300 then
+            db.chime = math.floor(n)
+        else
+            Say("chime: off, on, or seconds before landing (5 to 300)")
+            return
+        end
+        local lead = ChimeLead()
+        Say(lead and ("chime %ds before landing"):format(lead) or "no chime before landing")
+        if lead then PlaySound(CHIME_SOUND, "Master") end
     elseif cmd == "forget" then
         if arg == "confirm" then
             db.paths, db.legs, db.now = {}, {}, nil

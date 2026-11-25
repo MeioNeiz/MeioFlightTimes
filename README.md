@@ -18,16 +18,15 @@ paths, and each flight you take is timed leg by leg so they get closer to your o
   flown
 - Names the flight point worth learning when a route detours: "Learn Talrendis Point
   (Azshara): ~6:10, 7:10 faster", and marks it on the flight map
+- The clock time you land at, on the tooltip and the timer bar
 - A timer bar while flying, counting down to landing (move it with Edit Mode's Timer Bars)
+- A chime just before you land, flashing the taskbar if the game is in the background
 - Stays right when a newly learned flight point changes a route
 - With FlareUI's Flight Timer bar on, fills that bar instead
 
-No settings. `/meioflighttimes stats` shows what has been learned,
+`/meioflighttimes chime off` turns the chime off (`on`, or a number of seconds before
+landing, to change it). `/meioflighttimes stats` shows what has been learned,
 `/meioflighttimes forget confirm` starts over (`/flighttimes` works too).
-
-## Coming soon
-
-- A chime just before you land, and the clock time you land at
 
 ## Install
 
