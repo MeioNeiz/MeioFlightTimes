@@ -17,7 +17,7 @@ paths, and each flight you take is timed leg by leg so they get closer to your o
 - Flight time on the flight map's tooltip, marked `~` (estimate) for a route you haven't
   flown
 - Names the flight point worth learning when a route detours: "Learn Talrendis Point
-  (Azshara): ~6:10, 7:10 faster"
+  (Azshara): ~6:10, 7:10 faster", and marks it on the flight map
 - A timer bar while flying, counting down to landing (move it with Edit Mode's Timer Bars)
 - Stays right when a newly learned flight point changes a route
 - With FlareUI's Flight Timer bar on, fills that bar instead

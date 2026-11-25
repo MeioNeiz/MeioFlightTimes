@@ -595,8 +595,120 @@ local function Detour(info)
 end
 ns.Detour = Detour
 
+-- the unlearned point, marked on the flight map while its hint shows
+
+local function PointName(id)
+    local name = NODES[id][1]:gsub(", ", " (", 1)
+    if name ~= NODES[id][1] then name = name .. ")" end
+    return name
+end
+
+-- map position of a point from its world position: the client's own conversion, else a
+-- straight fit over the known points on this map (map x follows world y, map y world x)
+local function ClientPos(n, map)
+    if not (C_Map.GetMapPosFromWorldPos and CreateVector2D) then return end
+    local ok, _, pos = pcall(C_Map.GetMapPosFromWorldPos, n[3], CreateVector2D(n[4], n[5]), map)
+    if ok and pos and pos.x then return pos.x, pos.y end
+end
+
+local function MapPos(id, info)
+    local n = NODES[id]
+    local x, y = ClientPos(n, info.map)
+    if x then
+        -- trusted once it puts a known point where the flight map draws it
+        for _, node in pairs(info.bySlot) do
+            local known = NodeID(node.name)
+            if known and NODES[known][3] == n[3] then
+                local kx, ky = ClientPos(NODES[known], info.map)
+                if kx and math.abs(kx - node.x) + math.abs(ky - node.y) < 0.02 then
+                    return x, y
+                end
+                break
+            end
+        end
+    end
+    local pts = {}
+    for _, node in pairs(info.bySlot) do
+        local known = NodeID(node.name)
+        if known and NODES[known][3] == n[3] then
+            pts[#pts + 1] = { NODES[known][5], node.x, NODES[known][4], node.y }
+        end
+    end
+    local function Fit(w, m)
+        local sw, sm, sww, swm, k = 0, 0, 0, 0, #pts
+        for _, q in ipairs(pts) do
+            sw, sm = sw + q[w], sm + q[m]
+            sww, swm = sww + q[w] * q[w], swm + q[w] * q[m]
+        end
+        local d = k * sww - sw * sw
+        if k < 2 or d == 0 then return end
+        local b = (k * swm - sw * sm) / d
+        return (sm - b * sw) / k, b
+    end
+    local ax, bx = Fit(1, 2)
+    local ay, by = Fit(3, 4)
+    if ax and ay then return ax + bx * n[5], ay + by * n[4] end
+end
+
+local mark
+local MARK_SIZE = 28
+
+local function BuildMark(canvas)
+    mark = CreateFrame("Frame", nil, canvas)
+    mark:SetSize(MARK_SIZE, MARK_SIZE)
+    mark:SetFrameStrata("HIGH")
+    local ring = mark:CreateTexture(nil, "BACKGROUND")
+    ring:SetAtlas("Taxi_Frame_Green")
+    ring:SetPoint("CENTER")
+    ring:SetSize(MARK_SIZE * 1.6, MARK_SIZE * 1.6)
+    local icon = mark:CreateTexture(nil, "ARTWORK")
+    icon:SetAtlas("TaxiNode_Undiscovered")
+    icon:SetAllPoints()
+    local label = mark:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    label:SetPoint("TOP", mark, "BOTTOM", 0, -2)
+    label:SetTextColor(GREEN_FONT_COLOR:GetRGB())
+    label:SetShadowOffset(1, -1)
+    mark.Label = label
+    local glow = mark:CreateAnimationGroup()
+    glow:SetLooping("BOUNCE")
+    local a = glow:CreateAnimation("Alpha")
+    a:SetTarget(ring)
+    a:SetFromAlpha(1)
+    a:SetToAlpha(0.35)
+    a:SetDuration(0.6)
+    mark.Glow = glow
+end
+
+local function HideMark()
+    if mark then
+        mark.Glow:Stop()
+        mark:Hide()
+    end
+end
+
+local function ShowMark(id, info)
+    local fm = _G.FlightMapFrame
+    local canvas = fm and fm:IsShown() and fm.GetCanvas and fm:GetCanvas()
+    if not (canvas and info.map) then return end
+    local x, y = MapPos(id, info)
+    if not (x and x >= 0 and x <= 1 and y >= 0 and y <= 1) then return end
+    if not mark then BuildMark(canvas) end
+    mark:SetParent(canvas)
+    -- a steady size on screen at any zoom, as the game's own pins
+    local s = 1 / (fm.GetCanvasScale and fm:GetCanvasScale() or 1)
+    mark:SetScale(s)
+    mark:ClearAllPoints()
+    mark:SetPoint("CENTER", canvas, "TOPLEFT", x * canvas:GetWidth() / s,
+        -y * canvas:GetHeight() / s)
+    mark.Label:SetText("Learn " .. ShortName(NODES[id][1]))
+    mark:Show()
+    mark.Glow:Play()
+end
+ns.ShowMark, ns.HideMark = ShowMark, HideMark
+
 -- tooltips on the flight map's pins and the old taxi frame's buttons
 
+-- returns the lookup and the hinted point's id, for the map mark
 local function AddTooltipLine(slot)
     local info = slot and db and Lookup(slot)
     if not (info and info.est) or GameTooltip:IsForbidden() then return end
@@ -606,14 +718,14 @@ local function AddTooltipLine(slot)
     GameTooltip_AddNormalLine(GameTooltip, text)
     local id, with, saved = Detour(info)
     if id then
-        local name = NODES[id][1]:gsub(", ", " (", 1)
-        if name ~= NODES[id][1] then name = name .. ")" end
+        local name = PointName(id)
         -- 10 s steps: an estimate shouldn't look exact
         local function Near(s) return Clock(math.floor(s / 10 + 0.5) * 10) end
         GameTooltip_AddColoredLine(GameTooltip, ("Learn %s: ~%s, %s faster")
             :format(name, Near(with), Near(saved)), GREEN_FONT_COLOR)
     end
     GameTooltip:Show()
+    return info, id
 end
 
 local function OnTake(slot)
@@ -645,10 +757,13 @@ local function HookTaxi()
             hooksecurefunc(mixin, "OnMouseEnter", function(pin)
                 local data = pin.taxiNodeData
                 if data and data.state == Enum.FlightPathState.Reachable then
-                    AddTooltipLine(data.slotIndex)
+                    local info, id = AddTooltipLine(data.slotIndex)
+                    if id then ShowMark(id, info) end
                 end
             end)
+            if mixin.OnMouseLeave then hooksecurefunc(mixin, "OnMouseLeave", HideMark) end
         end
+        if _G.FlightMapFrame then _G.FlightMapFrame:HookScript("OnHide", HideMark) end
     end)
 end
 

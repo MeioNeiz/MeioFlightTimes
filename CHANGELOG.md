@@ -1,5 +1,10 @@
 # Meio Flight Times
 
+## 1.2.0
+
+- The flight point a detouring route should learn is marked on the flight map while you
+  hover the destination, with its name
+
 ## 1.1.1
 
 - Meio Next Stop shows the time to the next stop from these flight times
