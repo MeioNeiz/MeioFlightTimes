@@ -490,6 +490,7 @@ local function Check()
         if r.start and r.start <= t and r.stamp and time() - r.stamp < RESUME then
             cur = r
             if not enteredByReload then
+                cur.relogged = true
                 local seen = r.seen or r.start
                 cur.keep, cur.cut = false, math.min(cur.cut or seen, seen)
                 if cur.est then cur.est = cur.est + t - seen end
@@ -512,6 +513,21 @@ local function Check()
         ticker:Cancel()
         ticker = nil
     end
+end
+
+-- For MeioNextStop: the point the flight reaches next, and seconds to landing there (nil
+-- after a relog mid-air: the passing times then hold the time logged out)
+MeioFlightTimes_API = MeioFlightTimes_API or {}
+function MeioFlightTimes_API.NextStop()
+    local c = cur
+    if not c or c.next > #c.path then return end
+    local i, name = c.next - 1, c.path[c.next]
+    local from = i == 1 and c.start or c.passed[i]
+    if c.relogged or not from then return name end
+    local T, L = Offsets()
+    local leg = LegTime(c.path[i], name, (i == 1 and "t" or "p") .. "l", T, L)
+    if not leg then return name end
+    return name, math.max(0, from + leg - GetTime())
 end
 
 -- Detour hint: Forever's routes go round the houses while a flight point on the way is

@@ -1,5 +1,9 @@
 # Meio Flight Times
 
+## 1.1.1
+
+- Meio Next Stop shows the time to the next stop from these flight times
+
 ## 1.1.0
 
 - Built-in times for every route, worked out from the game's own flight paths, so a route
