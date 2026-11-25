@@ -10,7 +10,12 @@
     {
       "file": "before-after.png",
       "title": "Before and after",
-      "description": "Sentinel Hill, never flown to: its name and cost alone, then with \"Flight time: ~1:00 (estimate)\" worked out from a flight over it, and the timer bar on the way there"
+      "description": "Sentinel Hill, never flown to: its name and cost alone, then with \"Flight time: ~1:09 (estimate)\", and the timer bar on the way there"
+    },
+    {
+      "file": "detour.png",
+      "title": "A flight point worth learning",
+      "description": "Theramore to Everlook: \"Learn Talrendis Point (Azshara)\" would make the flight 7:10 faster"
     },
     {
       "file": "flown.png",
