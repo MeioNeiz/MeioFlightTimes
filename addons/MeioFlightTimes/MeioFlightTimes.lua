@@ -449,6 +449,33 @@ local function Chime(c, t)
     if FlashClientIcon then FlashClientIcon() end
 end
 
+-- group chat: "Crossroads -> Thunder Bluff, lands in ~1:32"
+
+local function GroupChannel()
+    local instance = LE_PARTY_CATEGORY_INSTANCE
+    if instance and IsInGroup(instance) then return "INSTANCE_CHAT" end
+    if IsInRaid() then return "RAID" end
+    if IsInGroup() then return "PARTY" end
+end
+
+local function AnnounceText(c)
+    local route = ShortName(c.path[1]) .. " -> " .. ShortName(c.path[#c.path])
+    if not (c.est and c.est > 0) then return route .. " (new route, time not known yet)" end
+    local left = math.max(0, c.est - (GetTime() - c.start))
+    return route .. ", lands in " .. (c.how == "flown" and "" or "~") .. Clock(left)
+end
+
+-- solo: only to your own chat
+local function Announce(c)
+    local text, channel = AnnounceText(c), GroupChannel()
+    if not channel then
+        Say(text .. " |cff999999(not in a group: only you see this)|r")
+        return
+    end
+    local send = C_ChatInfo and C_ChatInfo.SendChatMessage or SendChatMessage
+    if not pcall(send, text, channel) then Say("couldn't post to group chat: " .. text) end
+end
+
 local function Learn(c, landAt)
     local k = #c.path - 1
     local times = { c.start }
@@ -498,6 +525,7 @@ local function Check()
             db.now = cur
             FeedFlare()
             RefreshFlare()
+            if db.announce and GroupChannel() then Announce(cur) end
         elseif t - pending.at > CATCH then
             pending = nil
         end
@@ -805,6 +833,9 @@ local function Help()
         Cmd("/meioflighttimes stats") .. " - what has been learned so far",
         Cmd("/meioflighttimes chime off||on||<seconds>") .. " - the chime before landing"
             .. " (now " .. (ChimeLead() and ChimeLead() .. "s" or "off") .. ")",
+        Cmd("/meioflighttimes tell") .. " - post this flight's landing time to your group",
+        Cmd("/meioflighttimes announce on||off") .. " - post it at every take-off in a group"
+            .. " (now " .. (db.announce and "on" or "off") .. ")",
         Cmd("/meioflighttimes forget") .. " - forget every learned time",
     }) do
         DEFAULT_CHAT_FRAME:AddMessage("  " .. l)
@@ -843,6 +874,19 @@ SlashCmdList.MEIOFLIGHTTIMES = function(msg)
         local lead = ChimeLead()
         Say(lead and ("chime %ds before landing"):format(lead) or "no chime before landing")
         if lead then PlaySound(CHIME_SOUND, "Master") end
+    elseif cmd == "tell" then
+        if cur then Announce(cur) else Say("not on a flight") end
+    elseif cmd == "announce" then
+        if arg == "on" then
+            db.announce = true
+        elseif arg == "off" then
+            db.announce = nil
+        else
+            Say("announce: on or off")
+            return
+        end
+        Say(db.announce and "your group hears where you're flying and when you land, at take-off"
+            or "no post to your group at take-off")
     elseif cmd == "forget" then
         if arg == "confirm" then
             db.paths, db.legs, db.now = {}, {}, nil

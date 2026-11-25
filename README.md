@@ -23,10 +23,14 @@ paths, and each flight you take is timed leg by leg so they get closer to your o
 - A chime just before you land, flashing the taskbar if the game is in the background
 - Stays right when a newly learned flight point changes a route
 - With FlareUI's Flight Timer bar on, fills that bar instead
+- Tells your group where you're flying and when you land, if you want (off until you turn
+  it on)
 
 `/meioflighttimes chime off` turns the chime off (`on`, or a number of seconds before
-landing, to change it). `/meioflighttimes stats` shows what has been learned,
-`/meioflighttimes forget confirm` starts over (`/flighttimes` works too).
+landing, to change it). `/meioflighttimes announce on` posts "Stormwind -> Darkshire,
+lands in ~1:50" to party, raid or instance chat at every take-off in a group;
+`/meioflighttimes tell` posts the time left mid-flight. `/meioflighttimes stats` shows
+what has been learned, `/meioflighttimes forget confirm` starts over (`/flighttimes` works too).
 
 ## Install
 

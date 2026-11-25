@@ -1,5 +1,12 @@
 # Meio Flight Times
 
+## 1.4.0
+
+- Tell your group where you're flying and when you land: `/meioflighttimes announce on`
+  posts "Stormwind -> Darkshire, lands in ~1:50" to party, raid or instance chat at every
+  take-off (nothing when solo; off until you turn it on)
+- `/meioflighttimes tell` posts the time left on your flight now
+
 ## 1.3.0
 
 - The clock time you land at, on the flight map's tooltip and the timer bar ("lands
