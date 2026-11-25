@@ -6,8 +6,8 @@ flown yet.
 For WoW Forever.
 
 ![The flight map in Stormwind with the mouse on Sentinel Hill, never flown to: before, only its name
-and cost; with Meio Flight Times, "Flight time: ~1:09 (estimate)" under them, and the timer
-bar on the flight there](docs/before-after.png)
+and cost; with Meio Flight Times, "Flight time: ~1:09, lands 12:04 AM (estimate)" under them, and
+the timer bar on the flight there](docs/before-after.png)
 
 ## What it does
 

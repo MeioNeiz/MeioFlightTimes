@@ -10,7 +10,7 @@
     {
       "file": "before-after.png",
       "title": "Before and after",
-      "description": "Sentinel Hill, never flown to: its name and cost alone, then with \"Flight time: ~1:09 (estimate)\", and the timer bar on the way there"
+      "description": "Sentinel Hill, never flown to: its name and cost alone, then with \"Flight time: ~1:09, lands 12:04 AM (estimate)\", and the timer bar on the way there"
     },
     {
       "file": "detour.png",
@@ -20,12 +20,12 @@
     {
       "file": "flown.png",
       "title": "A route you've flown",
-      "description": "Darkshire after one flight there: the time it took, under its name and cost"
+      "description": "Darkshire after one flight there: \"Flight time: 1:50, lands 12:05 AM\", under its name and cost"
     },
     {
       "file": "flying.png",
       "title": "While flying",
-      "description": "The timer bar counting down to landing in Darkshire"
+      "description": "The timer bar counting down to landing in Darkshire, with the clock time you land at"
     }
   ]
 }
