@@ -25,6 +25,10 @@ paths, and each flight you take is timed leg by leg so they get closer to your o
 No settings. `/meioflighttimes stats` shows what has been learned,
 `/meioflighttimes forget confirm` starts over (`/flighttimes` works too).
 
+## Coming soon
+
+- A chime just before you land, and the clock time you land at
+
 ## Install
 
 Use your addon manager (CurseForge, Wago), or unzip a GitHub release into
