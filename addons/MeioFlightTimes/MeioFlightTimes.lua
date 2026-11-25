@@ -5,8 +5,9 @@
 -- kept per role: take-off or pass-over at its start, landing or pass-over at its end. A
 -- through-flight doesn't land at each point, so it is never timed as if it stopped.
 -- Estimate for a route: the exact route flown before, else the sum of its legs (a role not
--- timed yet is converted with the learned take-off and landing costs), else FlareUI's time
--- for the two ends, else straight-line distance at the speed learned on that map.
+-- timed yet comes from the game's own flight paths, Data.lua, at the speed learned from the
+-- player's flights, so Frequent Flier counts), else FlareUI's time for the two ends, else
+-- straight-line distance at the speed learned on that map.
 
 local ADDON, ns = ...
 local PREFIX = "|cffb090ffMeioFlightTimes:|r "
@@ -22,6 +23,14 @@ local FALLBACK_MAP_YARDS = 40000
 
 local db
 local pending, cur
+-- { name, faction bits, continent, world x, world y }
+---@type table<integer, [string, integer, integer, number, number]>
+local NODES = ns.TAXI_NODES or {}
+local LEGS = ns.TAXI_LEGS or {}
+local ROLE_INDEX = { tl = 1, tp = 2, pl = 3, pp = 4 }
+-- learnable only by druids
+local DRUID_ONLY = { [62] = true, [63] = true }
+local MIN_SAVING = 60
 
 local function Say(msg) DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg) end
 
@@ -73,10 +82,47 @@ local function FlareTimes()
     return g and g.flightTimes
 end
 
+-- the game's flight points by name; Alliance and Horde each have their own at shared towns
+local idsByName = {}
+for id, n in pairs(NODES) do
+    idsByName[n[1]] = idsByName[n[1]] or {}
+    table.insert(idsByName[n[1]], id)
+end
+
+local function Faction()
+    local f = UnitFactionGroup("player")
+    return f == "Alliance" and 1 or f == "Horde" and 2 or 3
+end
+
+local function NodeID(name)
+    local list = name and idsByName[name]
+    if not list then return end
+    local mine = Faction()
+    for _, id in ipairs(list) do
+        if bit.band(NODES[id][2], mine) ~= 0 then return id end
+    end
+end
+ns.NodeID = NodeID
+
+-- learned time over built-in time, from whole flights; Frequent Flier makes it ~0.8
+local function Scale() return db.scale or 1 end
+
+local function BuiltLeg(a, b, role)
+    local ia, ib = NodeID(a), NodeID(b)
+    local rec = ia and ib and LEGS[ia] and LEGS[ia][ib]
+    return rec and rec[ROLE_INDEX[role]] * Scale()
+end
+
 -- a leg's time in a role, and whether it was timed in exactly that role
 local function LegTime(a, b, role, T, L)
     local fwd, rev = db.legs[EdgeKey(a, b)], db.legs[EdgeKey(b, a)]
     if fwd and fwd[role] then return fwd[role], true end
+    local built = BuiltLeg(a, b, role)
+    if built then
+        -- timed in another role: the game's path tells what the role changes
+        for r, s in pairs(fwd or {}) do return s + built - BuiltLeg(a, b, r), false end
+        return built, false
+    end
     local best, bestDiff
     local function consider(s, asRole, penalty)
         local ft, fl = Ends(asRole)
@@ -392,6 +438,18 @@ local function Learn(c, landAt)
     end
     if c.keep and landAt - c.start >= MIN_FLIGHT then
         db.paths[PathKey(c.path)] = Round(landAt - c.start)
+        local built = 0
+        for i = 1, k do
+            local ia, ib = NodeID(c.path[i]), NodeID(c.path[i + 1])
+            local rec = ia and ib and LEGS[ia] and LEGS[ia][ib]
+            if not rec then built = nil break end
+            built = built + rec[ROLE_INDEX[Role(i, k)]]
+        end
+        if built and built > 0 then
+            local ratio = math.max(0.5, math.min(1.5, (landAt - c.start) / built))
+            db.scale = db.scale and db.scale * 0.5 + ratio * 0.5 or ratio
+            db.scale = math.floor(db.scale * 1000 + 0.5) / 1000
+        end
     end
 end
 
@@ -456,6 +514,71 @@ local function Check()
     end
 end
 
+-- Detour hint: Forever's routes go round the houses while a flight point on the way is
+-- unlearned. Shortest route in time over the points known plus one unlearned one, legs as
+-- Estimate times them; the server's own routing is assumed to take the quickest.
+
+local function Quickest(from, to, usable, T, L)
+    local dist, prev, done = { [from] = 0 }, {}, {}
+    while true do
+        local u, du
+        for id, d in pairs(dist) do
+            if not done[id] and (not du or d < du) then u, du = id, d end
+        end
+        if not u or u == to then break end
+        done[u] = true
+        for v in pairs(LEGS[u] or {}) do
+            if usable[v] and not done[v] then
+                local role = (u == from and "t" or "p") .. (v == to and "l" or "p")
+                local s = LegTime(NODES[u][1], NODES[v][1], role, T, L)
+                if s and (not dist[v] or du + s < dist[v]) then dist[v], prev[v] = du + s, u end
+            end
+        end
+    end
+    return dist[to], prev
+end
+
+local function KnownIDs()
+    local known = {}
+    for i = 1, NumTaxiNodes and NumTaxiNodes() or 0 do
+        local id = NodeID(TaxiNodeName(i))
+        if id then known[id] = true end
+    end
+    return known
+end
+
+-- the unlearned point that makes info's route quickest: id, seconds with it, seconds saved
+local function Detour(info)
+    local from, to = NodeID(info.path[1]), NodeID(info.path[#info.path])
+    if not (from and to and info.est) then return end
+    local known = KnownIDs()
+    known[from], known[to] = true, true
+    local T, L = Offsets()
+    local base = Quickest(from, to, known, T, L)
+    base = math.min(base or info.est, info.est)
+    local continent, mine = NODES[from][3], Faction()
+    local druid = select(2, UnitClass("player")) == "DRUID"
+    local bestID, bestTime
+    for id, n in pairs(NODES) do
+        if not known[id] and n[3] == continent and bit.band(n[2], mine) ~= 0
+            and (druid or not DRUID_ONLY[id]) then
+            known[id] = true
+            local s, prev = Quickest(from, to, known, T, L)
+            known[id] = nil
+            local via, at = false, prev and prev[to]
+            while at do
+                if at == id then via = true break end
+                at = prev[at]
+            end
+            if s and via and (not bestTime or s < bestTime) then bestID, bestTime = id, s end
+        end
+    end
+    if bestID and base - bestTime >= MIN_SAVING and base - bestTime >= base * 0.1 then
+        return bestID, bestTime, base - bestTime
+    end
+end
+ns.Detour = Detour
+
 -- tooltips on the flight map's pins and the old taxi frame's buttons
 
 local function AddTooltipLine(slot)
@@ -465,6 +588,15 @@ local function AddTooltipLine(slot)
     if info.how == "rough" then text = text .. " |cff999999(rough: route not flown)|r"
     elseif info.how ~= "flown" then text = text .. " |cff999999(estimate)|r" end
     GameTooltip_AddNormalLine(GameTooltip, text)
+    local id, with, saved = Detour(info)
+    if id then
+        local name = NODES[id][1]:gsub(", ", " (", 1)
+        if name ~= NODES[id][1] then name = name .. ")" end
+        -- 10 s steps: an estimate shouldn't look exact
+        local function Near(s) return Clock(math.floor(s / 10 + 0.5) * 10) end
+        GameTooltip_AddColoredLine(GameTooltip, ("Learn %s: ~%s, %s faster")
+            :format(name, Near(with), Near(saved)), GREEN_FONT_COLOR)
+    end
     GameTooltip:Show()
 end
 

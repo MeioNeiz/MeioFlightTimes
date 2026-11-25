@@ -11,11 +11,13 @@ bar on the flight there](docs/before-after.png)
 
 ## What it does
 
-Each flight is timed leg by leg, between the flight points you pass on the way, so a route
-you haven't flown is still worked out from the legs you have.
+Every route has a time from your first flight: the times come from the game's own flight
+paths, and each flight you take is timed leg by leg so they get closer to your own.
 
 - Flight time on the flight map's tooltip, marked `~` (estimate) for a route you haven't
   flown
+- Names the flight point worth learning when a route detours: "Learn Talrendis Point
+  (Azshara): ~6:10, 7:10 faster"
 - A timer bar while flying, counting down to landing (move it with Edit Mode's Timer Bars)
 - Stays right when a newly learned flight point changes a route
 - With FlareUI's Flight Timer bar on, fills that bar instead

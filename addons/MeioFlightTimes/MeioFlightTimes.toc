@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: MeioFlightTimes
 ## Notes: Flight times on the flight map and a timer while flying, learned per leg so a route you haven't flown is still timed. /meioflighttimes
-## Version: 1.0.1
+## Version: 1.1.0
 ## Author: MeioNeiz
 ## X-Website: https://github.com/MeioNeiz/MeioFlightTimes
 ## X-License: MIT
@@ -11,4 +11,5 @@
 ## IconTexture: Interface\Icons\Ability_Mount_Gryphon_01
 ## SavedVariables: MeioFlightTimesDB
 
+Data.lua
 MeioFlightTimes.lua

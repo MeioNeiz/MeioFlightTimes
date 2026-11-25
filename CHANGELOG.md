@@ -1,5 +1,13 @@
 # Meio Flight Times
 
+## 1.1.0
+
+- Built-in times for every route, worked out from the game's own flight paths, so a route
+  shows a time before you have flown anything. Your own flights still take over leg by leg
+- Flying faster (Frequent Flier) scales the built-in times to your speed after a flight
+- On a route that detours, the tooltip names the flight point to learn and how much faster
+  the flight would be
+
 ## 1.0.1
 
 - Logging out mid-flight no longer saves a flight time with the time offline in it: only
