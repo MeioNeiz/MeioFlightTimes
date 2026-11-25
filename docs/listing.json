@@ -10,12 +10,12 @@
     {
       "file": "before-after.png",
       "title": "Before and after",
-      "description": "The flight map in Stormwind: Darkshire's name and cost, then with its flight time under them"
+      "description": "Sentinel Hill, never flown to: its name and cost alone, then with \"Flight time: ~1:00 (estimate)\" worked out from a flight over it, and the timer bar on the way there"
     },
     {
-      "file": "estimate.png",
-      "title": "A route not flown yet",
-      "description": "Sentinel Hill, passed over on the way to Darkshire but never flown to: its time worked out from that leg"
+      "file": "flown.png",
+      "title": "A route you've flown",
+      "description": "Darkshire after one flight there: the time it took, under its name and cost"
     },
     {
       "file": "flying.png",
