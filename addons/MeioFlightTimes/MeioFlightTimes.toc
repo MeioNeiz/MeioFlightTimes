@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: MeioFlightTimes
-## Notes: Flight times on the flight map and a timer while flying, learned per leg so a route you haven't flown is still timed. /meioflighttimes
-## Version: 1.4.0
+## Notes: Flight times on the flight map and a timer while flying, learned per leg so a route you haven't flown is still timed; when boats and zeppelins leave each dock. /meioflighttimes
+## Version: 1.5.0
 ## Author: MeioNeiz
 ## X-Website: https://github.com/MeioNeiz/MeioFlightTimes
 ## X-License: MIT
@@ -10,6 +10,11 @@
 ## Category: Meio
 ## IconTexture: Interface\Icons\Ability_Mount_Gryphon_01
 ## SavedVariables: MeioFlightTimesDB
+## AddonCompartmentFunc: MeioFlightTimes_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: MeioFlightTimes_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: MeioFlightTimes_OnAddonCompartmentLeave
 
 Data.lua
 MeioFlightTimes.lua
+BoatData.lua
+Boats.lua

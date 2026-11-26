@@ -828,7 +828,8 @@ end
 local function Cmd(text) return "|cffffd100" .. text .. "|r" end
 
 local function Help()
-    Say("flight times learned per leg, so a route you haven't flown is still timed")
+    Say("flight times learned per leg, so a route you haven't flown is still timed; boat and"
+        .. " zeppelin departures")
     for _, l in ipairs({
         Cmd("/meioflighttimes stats") .. " - what has been learned so far",
         Cmd("/meioflighttimes chime off||on||<seconds>") .. " - the chime before landing"
@@ -836,7 +837,11 @@ local function Help()
         Cmd("/meioflighttimes tell") .. " - post this flight's landing time to your group",
         Cmd("/meioflighttimes announce on||off") .. " - post it at every take-off in a group"
             .. " (now " .. (db.announce and "on" or "off") .. ")",
-        Cmd("/meioflighttimes forget") .. " - forget every learned time",
+        Cmd("/meioflighttimes boats") .. " - when boats and zeppelins leave each dock",
+        Cmd("/meioflighttimes boats on||off") .. " - timers when you stand by a pier"
+            .. " (now " .. (ns.BoatPanelOn() and "on" or "off") .. ")",
+        Cmd("/meioflighttimes boats reset") .. " - put the pier timers back",
+        Cmd("/meioflighttimes forget") .. " - forget every learned flight time",
     }) do
         DEFAULT_CHAT_FRAME:AddMessage("  " .. l)
     end
@@ -874,6 +879,8 @@ SlashCmdList.MEIOFLIGHTTIMES = function(msg)
         local lead = ChimeLead()
         Say(lead and ("chime %ds before landing"):format(lead) or "no chime before landing")
         if lead then PlaySound(CHIME_SOUND, "Master") end
+    elseif cmd == "boats" or cmd == "boat" then
+        ns.BoatsSlash(arg)
     elseif cmd == "tell" then
         if cur then Announce(cur) else Say("not on a flight") end
     elseif cmd == "announce" then

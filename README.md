@@ -26,12 +26,22 @@ paths, and each flight you take is timed leg by leg so they get closer to your o
 - With FlareUI's Flight Timer bar on, fills that bar instead
 - Tells your group where you're flying and when you land, if you want (off until you turn
   it on)
+- Boats and zeppelins: stand by a pier and a bar counts down to the next departure for each
+  route leaving it; the minimap's addon button lists every dock's next departure. Each
+  route is timed the first time you ride it (from leaving or arriving at a pier), or from
+  Nauticus's saved schedules if you had it
+
+![Pier timers on Auberdine's quay: Stormwind Harbor leaving in 0:11, Menethil Harbor due in
+1:29, Rut'Theran Village leaving in 0:40, and the timetable of every dock on the continent
+under them](docs/boats.png)
 
 `/meioflighttimes chime off` turns the chime off (`on`, or a number of seconds before
 landing, to change it). `/meioflighttimes announce on` posts "Stormwind -> Darkshire,
 lands in ~1:50" to party, raid or instance chat at every take-off in a group;
 `/meioflighttimes tell` posts the time left mid-flight. `/meioflighttimes stats` shows
 what has been learned, `/meioflighttimes forget confirm` starts over (`/flighttimes` works too).
+`/meioflighttimes boats` prints the boat and zeppelin timetable, `boats off` hides the pier
+timers, `boats reset` puts them back in place (drag to move).
 
 ## Install
 
@@ -45,6 +55,11 @@ Bugs, ideas or just a thumbs up: leave a comment on the CurseForge or Wago page 
 ## More Meio addons
 
 [Meio Trainer Compare](https://www.curseforge.com/wow/addons/trainercompare) | [Meio Next Stop](https://www.curseforge.com/wow/addons/leavebutton) | [Meio Auto Rank](https://www.curseforge.com/wow/addons/meio-autorank) | [Meio Meter Hover](https://www.curseforge.com/wow/addons/meterhover) | [Meio Map](https://addons.wago.io/addons/meiomap) | [Meio Alts](https://addons.wago.io/addons/meioalts) | [Meio DPS](https://addons.wago.io/addons/meiodps) | [Meio Nameplates](https://addons.wago.io/addons/meioplates) | [Meio Hub](https://addons.wago.io/addons/meiohub) | [Meio Pets](https://addons.wago.io/addons/meiopets) | [Meio XP Meter](https://addons.wago.io/addons/meiostats) | [Meio Bags](https://addons.wago.io/addons/meiobags) | [Meio Fixes](https://addons.wago.io/addons/meiofixes) | [Meio Tooltips](https://addons.wago.io/addons/meiotooltipfold) | [Meio Autorun](https://addons.wago.io/addons/meioautorunturn) | [Meio Mail](https://addons.wago.io/addons/meiomail) | [Meio QoL](https://addons.wago.io/addons/meioqol) | [Meio TSM Browse](https://addons.wago.io/addons/tsmbrowse) | [Meio Shards](https://addons.wago.io/addons/meioshards) | [Meionomics](https://www.curseforge.com/wow/addons/meionomics) | [Meio Spike Check](https://addons.wago.io/addons/meiospikecheck) | [Meio BiS Extras](https://addons.wago.io/addons/meiobisextras) | [Meio Buff Thanks](https://addons.wago.io/addons/meiobuffthanks) | [Meio Flare Fixes](https://addons.wago.io/addons/meioflarefixes) | [Meio Flare Questie](https://addons.wago.io/addons/meioflarequestie)
+
+## Credits
+
+Boat and zeppelin round trips and dock timings come from
+NauticusClassicResurrected (MIT, by psynct and the Nauticus authors), whose measurements and cycle maths this builds on.
 
 ## Licence
 

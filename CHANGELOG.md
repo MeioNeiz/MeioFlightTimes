@@ -1,5 +1,13 @@
 # Meio Flight Times
 
+## 1.5.0
+
+- Boat and zeppelin timers: by a pier, a bar per route counts down to its next departure
+  (or says when it's due); the minimap's addon button lists every dock's next departure,
+  and broker bars (Titan, ChocolateBar) get it too
+- Each route is timed the first time you ride it, and schedules saved by Nauticus carry over
+- `/meioflighttimes boats`, `boats on|off`, `boats reset`
+
 ## 1.4.0
 
 - Tell your group where you're flying and when you land: `/meioflighttimes announce on`

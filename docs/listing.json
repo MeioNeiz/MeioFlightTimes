@@ -18,6 +18,11 @@
       "description": "Theramore to Everlook on the flight map: \"Learn Talrendis Point (Azshara)\" would make the flight 7:10 faster, and the point is marked in green on the map"
     },
     {
+      "file": "boats.png",
+      "title": "Boats and zeppelins",
+      "description": "On Auberdine's quay: a bar per boat counting down to its departure, and the timetable of every dock from the minimap's addon button"
+    },
+    {
       "file": "flown.png",
       "title": "A route you've flown",
       "description": "Darkshire after one flight there: \"Flight time: 1:50, lands 12:05 AM\", under its name and cost"
