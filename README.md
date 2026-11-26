@@ -1,7 +1,7 @@
 # Meio Flight Times
 
-How long a flight takes, on the flight map and while you fly, even for routes you haven't
-flown yet.
+Is that flight 1 minute or 5? See the time on the flight map before you click, even for
+routes you've never flown, and get a chime before you land.
 
 For WoW Forever.
 
@@ -22,6 +22,7 @@ paths, and each flight you take is timed leg by leg so they get closer to your o
 - A timer bar while flying, counting down to landing (move it with Edit Mode's Timer Bars)
 - A chime just before you land, flashing the taskbar if the game is in the background
 - Stays right when a newly learned flight point changes a route
+- Frequent Flier: after your first flight, estimates use the speed you really fly at
 - With FlareUI's Flight Timer bar on, fills that bar instead
 - Tells your group where you're flying and when you land, if you want (off until you turn
   it on)

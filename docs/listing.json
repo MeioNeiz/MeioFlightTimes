@@ -1,6 +1,6 @@
 {
   "title": "Meio Flight Times",
-  "summary": "Flight times on the flight map, even for routes you've never flown.",
+  "summary": "Shows flight times on the map before you fly, even new routes; chimes before landing.",
   "cfCategory": "Map & Minimap",
   "cfExtra": [],
   "wagoCategories": [
